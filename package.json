@@ -1,0 +1,22 @@
+{
+  "name": "double-series",
+  "version": "1.0.0",
+  "description": "Board Game Simulation",
+  "main": "server.js",
+  "dependencies": {
+    "websocket": "1.0.23"
+  },
+  "engine": {
+    "node": "*",
+    "npm": "*"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rorico/Side-Projects.git"
+  },
+  "private": true,
+  "author": "rorico"
+}

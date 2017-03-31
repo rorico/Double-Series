@@ -1,0 +1,192 @@
+::-webkit-scrollbar {
+    display: none; 
+}
+div, td {
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+#holder {
+    position:relative;
+    justify-content: center;
+    text-align: center;
+}
+#game {
+    display: inline-block;
+}
+.sideHolder {
+    position: relative;
+}
+.rotate90 {
+    -moz-transform: translateX(-50%) translateY(-50%) rotate(90deg);
+    -webkit-transform: translateX(-50%) translateY(-50%) rotate(90deg);
+    transform: translateX(-50%) translateY(-50%) rotate(90deg);
+    top: 50%;
+    left: 50%;
+    position: absolute;
+}
+.rotate270 {
+    -moz-transform: translateX(-50%) translateY(-50%) rotate(-90deg);
+    -webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);
+    transform: translateX(-50%) translateY(-50%) rotate(-90deg);
+    top: 50%;
+    left: 50%;
+    position: absolute;
+}
+.rotate180 {
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
+#board {
+    border: 1px black solid;
+    border-radius: 5px;
+    color: white;
+    text-align: center;
+}
+#board td {
+    width: 40px;
+    height: 40px;
+    border: 1px black solid;
+    padding: 0;
+}
+#scores td {
+    width: 75px;
+}
+#board .v0 {
+    color: black;
+    background-color: white;
+}
+#board .v1 {
+    background-color: #191970;
+}
+#board .v2 {
+    background-color: #191970;
+    border: 3px #add8e6 solid;
+}
+#board .v3 {
+    background-color: #6e8b3d;
+}
+#board .v4 {
+    background-color: #6e8b3d;
+    border: 3px black solid;
+}
+.c1 {
+    background-color: #191970;
+    color: white;
+}
+.c3 {
+    background-color: #6e8b3d;
+    color: white;
+}
+#card_played {
+    text-align: center;
+}
+#card_played .block {
+    height: 40px;
+    width: 40px;
+    border: 1px solid black;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 36px;
+}
+#placeholder.block {
+    border: none;
+}
+#cardHolder {
+    max-height: 40px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+}
+.hide {
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: black;
+    opacity: 0.7;
+}
+.show {
+    position: relative;
+    z-index: 2;
+}
+#msg {
+    background-color: white;
+    font-size: 100px;
+    position: fixed;
+    border: 1px black solid;
+    padding: 10px;
+}
+.hand {
+    justify-content: center;
+    overflow: hidden;
+    height: 50px;
+    display: block;
+    text-align: center;
+}
+.hand div {
+    margin-top: 8px;
+    height: 40px;
+    width: 40px;
+    border: 1px solid black;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 36px;
+}
+.hand .raise {
+    margin-top: 0px;
+}
+.hand.myTurn1 div {
+    background-color: #191970;
+}
+.hand.myTurn3 div {
+    background-color: #6e8b3d;
+}
+.playerTitle {
+    white-space: nowrap;
+    overflow: hidden;
+    height: 30px;
+    display: block;
+    text-align: center;
+}
+.options {
+    border: 1px solid black;
+    margin-top: 2px;
+    display: block;
+    text-align: center;
+}
+.choose {
+    background-color: yellow !important;
+}
+.choose.special {
+    background-color: red !important;
+}
+.possible {
+    background-color: yellow;
+}
+#modal {
+    background-color: white;
+    position: absolute;
+    font-size: 30px;
+    border: 1px black solid;
+    padding: 10px;
+    text-align: center;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+#modal .block {
+    border-radius: 5px;
+    font-size: 30px;
+    border: 1px black solid;
+    margin: 10px;
+    text-align: center;
+}
+.inline {
+    display:inline-block;
+    padding: 5px;
+}
