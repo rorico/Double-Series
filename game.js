@@ -29,6 +29,7 @@ module.exports = function(settings) {
     var handLengths = [];
     var cardsleft;
     var cardsPlayed;
+    var cardsDrawn;
     var gameEnd;
     var winner;
     var winningPlayer = -1;
@@ -431,9 +432,13 @@ module.exports = function(settings) {
             all.cardPlayed = hands[player][card];
 
             cardsPlayed.push(all);
-            ret.newCard = drawCard(player,card,team,replace);
-            if (ret.newCard === undefined) {
+            var newCard = drawCard(player,card,team,replace);
+            if (newCard === undefined) {
                 all.handSize = handLengths[player];
+            } else {
+                //for history purposes, hold newCard
+                cardsDrawn.push(newCard);
+                ret.newCard = newCard;
             }
 
             if (gameEnd) {
