@@ -99,13 +99,9 @@ module.exports = function(settings) {
                 };
 
                 activePlayers++;
-                if (player === nextPlayer) {
-                    //this will stop the currently running AI
-                    clearTimeout(nextPlayTimer);
-                    playNext();
-                } else if (activePlayers === 1) {
-                    //this means this is only player
-                    playNext();
+                if (activePlayers === 1) {
+                    //this means this is only player, and was paused
+                    start();
                 }
             } else {
                 ret.success = false;
@@ -139,7 +135,7 @@ module.exports = function(settings) {
                         }
                         var result = AIplay(hand,team,info);
                         if (speed) {
-                            setTimeout(function() {
+                            nextPlayTimer = setTimeout(function() {
                                 callback(result);
                             },speed - new Date() + startTime);
                         } else {
@@ -149,6 +145,13 @@ module.exports = function(settings) {
                 }
                 players[player] = playerObj;
                 playerNames[player] = playerObj.name;
+
+                if (player === nextPlayer) {
+                    //this will stop the currently running AI if its holding this spot
+                    clearTimeout(nextPlayTimer);
+                }
+
+                repeatWait(player); //if empty, nothing happens
                 sendChange({player:player,name:playerObj.name});
                 return true;
             } catch (err) {
@@ -183,7 +186,7 @@ module.exports = function(settings) {
             activePlayers++;
             if (activePlayers === 1) {
                 //this means this is only player
-                playNext();
+                start();
             }
 
             return ret;
@@ -198,15 +201,12 @@ module.exports = function(settings) {
                     if (players[player].human) {
                         setAI([player],defaultAI);
                     }
-                    activePlayers--;
                     if (recentLeave === player) {
                         recentLeave = -1;
                     }
-                    if (activePlayers) {
-                        playNext();
-                    } else {
-                        //stop game if no one is playing
-                        clearTimeout(nextPlayTimer);
+                    activePlayers--;
+                    if (!activePlayers) {
+                        pause();
                     }
                 },5000);
             }
@@ -217,7 +217,7 @@ module.exports = function(settings) {
             var team = helper.getTeam(player);
             var hand = hands[player];
             try {
-                players[player].play(hand,team,getInfo(),function(result) {
+                waitFor(player,"play",[hand,team,getInfo()],function(result) {
                     playCard(player,result);
                 });
             } catch (err) {
@@ -255,6 +255,30 @@ module.exports = function(settings) {
                 playNext();
             } else {
                 sendAllDone();
+            }
+        }
+
+        //for now, assume callback is the last input into the function
+        function waitFor(player,name,inputs,callback) {
+            if (!callback) {
+                callback = inputs;
+                inputs = [];
+            }
+            var cb = function() {
+                callback.apply(null,arguments);
+                waitingFor[player] = null;
+            }
+            inputs.push(cb);
+            waitingFor[player] = [name,inputs];
+            players[player][name].apply(null,inputs);
+        }
+
+        function repeatWait(player) {
+            var wait = waitingFor[player];
+            if (wait) {
+                var name = wait[0];
+                var inputs = wait[1];
+                players[player][name].apply(null,inputs);
             }
         }
 
@@ -355,6 +379,15 @@ module.exports = function(settings) {
             }
         }
 
+        function start() {
+            playNext();
+        }
+
+        function pause() {
+            // this timeout if for AIs
+            clearTimeout(nextPlayTimer);
+        }
+
         function getInfo() {
             var info = board.getInfo();
             info.cardsPlayed = cardsPlayed;
@@ -371,6 +404,7 @@ module.exports = function(settings) {
             info.playerNames = playerNames;
             info.handLengths = handLengths;
             info.nextPlayer = nextPlayer;
+            info.gameEnd = gameEnd;
             return info;
         }
 
@@ -627,23 +661,6 @@ module.exports = function(settings) {
             deck.push(0);
             deck.push(-1);
         }
-    }
-
-    //restart game
-    function newGame() {
-        board.newGame();
-        gameEnd = false;
-        winner = -1;
-        nextPlayer = (winningPlayer + 1) % 4;
-        shuffle(deck);
-        cardsleft = maxCards;
-        //4 players
-        for (var i = 0 ; i < 4 ; i++) {
-            hands[i] = deck.slice(cardsleft - handLength,cardsleft);
-            handLengths[i] = handLength;
-            cardsleft -= handLength;
-        }
-        cardsPlayed = [];
     }
 
     //shuffle deck
