@@ -129,7 +129,10 @@ wsServer.on('request', function(request) {
                     switch(type) {
                         case "play":
                             if (typeof playCallback === "function") {
-                                playCallback(query.result);
+                                //the callback can set itself again, reset it before calling
+                                var callback = playCallback;
+                                playCallback = null;
+                                callback(query.result);
                             } else {
                                 console.log("not your turn?");
                             }
