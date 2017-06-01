@@ -295,7 +295,7 @@ module.exports = function(settings) {
             var cb = function() {
                 callback.apply(null,arguments);
                 waitingFor[player] = null;
-            }
+            };
             inputs.push(cb);
             waitingFor[player] = [name,inputs];
             players[player][name].apply(null,inputs);
@@ -307,7 +307,7 @@ module.exports = function(settings) {
                 var name = wait[0];
                 var inputs = wait[1];
                 players[player][name].apply(null,inputs);
-            };
+            }
         }
 
         function sendPlay(data) {
@@ -728,4 +728,4 @@ module.exports = function(settings) {
         return array;
     }
     return ret;
-}
+};
