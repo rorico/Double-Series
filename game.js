@@ -142,6 +142,13 @@ module.exports = function(settings) {
                             callback(result);
                         }
                     };
+                    //all AI always want to play another game
+                    playerObj.newGame = function(callback) {
+                        //need to wrap as to not run into infinite loop
+                        setTimeout(function() {
+                            callback();
+                        },0);
+                    };
                 }
                 players[player] = playerObj;
                 playerNames[player] = playerObj.name;
@@ -240,7 +247,7 @@ module.exports = function(settings) {
                     playNext();
                 } else if (ret.status === 3) {
                     sendEnd(ret.winner);
-                    setTimeout(startNewGame,speed * 3);
+                    startNewGame();
                 } else {
                     console.log("something went wrong");
                 }
@@ -250,9 +257,26 @@ module.exports = function(settings) {
 
         function startNewGame() {
             if (games < maxGame) {
-                newGame();
-                sendNewGame();
-                playNext();
+                waiting = 0;
+                var check = function() {
+                    if (!waiting) {
+                        setTimeout(function() {
+                            newGame();
+                            playNext();
+                        },speed * 3);
+                    }
+                };
+                var cb = function() {
+                    waiting--;
+                    check();
+                };
+                for (var i = 0 ; i < players.length ; i++) {
+                    if (players[i].newGame) {
+                        waiting++;
+                        waitFor(i,"newGame",cb);
+                    }
+                }
+                check();
             } else {
                 sendAllDone();
             }
@@ -279,7 +303,7 @@ module.exports = function(settings) {
                 var name = wait[0];
                 var inputs = wait[1];
                 players[player][name].apply(null,inputs);
-            }
+            };
         }
 
         function sendPlay(data) {
@@ -346,6 +370,24 @@ module.exports = function(settings) {
             }
         }
 
+        //restart game
+        function newGame() {
+            board.newGame();
+            gameEnd = false;
+            winner = -1;
+            nextPlayer = (winningPlayer + 1) % 4;
+            shuffle(deck);
+            cardsleft = maxCards;
+            //4 players
+            for (var i = 0 ; i < 4 ; i++) {
+                hands[i] = deck.slice(cardsleft - handLength,cardsleft);
+                handLengths[i] = handLength;
+                cardsleft -= handLength;
+            }
+            cardsPlayed = [];
+            cardsDrawn = [];
+            sendNewGame();
+        }
 
         function sendNewGame() {
             var data = getAllInfo();

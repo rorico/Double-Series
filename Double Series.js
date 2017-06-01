@@ -109,6 +109,9 @@ function startConnection() {
                     $("#p" + data.nextPlayer).addClass("myTurn" + helper.getTeam(data.nextPlayer));
                 }
             }
+            if (data.gameEnd) {
+                showNewGame();
+            }
             break;
         case "play":
             if (data.player === undefined) {
@@ -163,6 +166,7 @@ function startConnection() {
             games++;
             $("#bluewin").text(getPercentage(bluewin,games));
             $("#greenwin").text(getPercentage(greenwin,games));
+            showNewGame();
             break;
         case "newGame":
             if (data.hand) {
@@ -180,6 +184,8 @@ function startConnection() {
                     $("#p" + data.nextPlayer).addClass("myTurn" + helper.getTeam(data.nextPlayer));
                 }
             }
+            //remove newGame modal
+            $("#modal").remove();
             break;
         case "home":
             popup();
@@ -197,7 +203,14 @@ function startConnection() {
 }
 
 function playData(player,result) {
-    var data = {type:"play",player:player,result:result};
+    sendData({type:"play",player:player,result:result});
+}
+
+function sendNewGame(player,result) {
+    sendData({type:"start"});
+}
+
+function sendData(data) {
     connection.send(JSON.stringify(data));
 }
 

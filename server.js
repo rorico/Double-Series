@@ -101,13 +101,19 @@ wsServer.on('request', function(request) {
         if (activeGames.hasOwnProperty(gameId)) {
             var game = activeGames[gameId];
             var playCallback;
+            var startCallback;
 
             var play = function(a,b,c,callback) {
                 playCallback = callback;
             }
 
+            var newGame = function(callback) {
+                startCallback = callback;
+            }
+
             var player = {
                 play:play,
+                newGame:newGame,
                 onNewGame:sendData,
                 onPlay:sendData,
                 onEndGame:sendData,
@@ -139,6 +145,16 @@ wsServer.on('request', function(request) {
                             break;
                         case "change":
                             res.change(query.name);
+                            break;
+                        case "start":
+                            if (typeof startCallback === "function") {
+                                //the callback can set itself again, reset it before calling
+                                var callback = startCallback;
+                                startCallback = null;
+                                callback(query.result);
+                            } else {
+                                console.log("game not ended?");
+                            }
                             break;
                     }
                 };

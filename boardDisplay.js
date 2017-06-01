@@ -1,5 +1,26 @@
+function modal() {
+    return $("<div id='modal' class='block'></div>");
+}
+
+function button(text,click) {
+    return $("<input class='block' type='button' name='name' value='" + text + "'>").click(click);
+}
+
+function showNewGame() {
+    var popup = modal();
+    popup.html("Do you want to start a new game?<br />");
+    popup.append(button("Yes",function() {
+        sendNewGame();
+        popup.html("Waiting on other players...");
+    }));
+    popup.append(button("No",function() {
+        popup.remove();
+    }));
+    $("#holder").append(popup);
+}
+
 function popup() {
-    var popup = $("<div id='modal' class='block'></div>");
+    var popup = modal();
     var nameField = $("<input class='block' type='text' name='name' value='Your Name'>");
     nameField.change(function(e) {
         myName = nameField.val();
