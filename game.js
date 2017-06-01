@@ -53,6 +53,8 @@ module.exports = function(settings) {
         var recentLeave = -1;
         var removeTimer;
 
+        var waitingFor = [];
+
         ret.addHuman = addHuman;
         ret.addSpectator = addSpectator;
         ret.setAI = setAI;
