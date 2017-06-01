@@ -4,7 +4,7 @@ var defaultSettings = {
     speed:0,
     maxGame:100,
     checkValid:true
-}
+};
 var AIs = [];
 var dbL = 1;
 
@@ -42,7 +42,7 @@ var validOptions = {
             dbL = +str;
         }
     }
-}
+};
 
 var args = process.argv;
 for (var i = 2 ; i < args.length ; i++) {
@@ -56,7 +56,7 @@ for (var i = 2 ; i < args.length ; i++) {
         }
     } else {
         //show some debug info
-        console.log("usage:")
+        console.log("usage:");
         for (var opt in validOptions) {
             console.log("    " + opt + ": " + validOptions[opt].opt);
         }
@@ -65,7 +65,7 @@ for (var i = 2 ; i < args.length ; i++) {
 }
 
 
-game = newGame(defaultSettings);
+var game = newGame(defaultSettings);
 for (var i = 0 ; i < AIs.length ; i++) {
     if (!game.setAI([i],AIs[i])) {
         process.exit(1);
