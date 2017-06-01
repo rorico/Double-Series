@@ -80,8 +80,10 @@ module.exports = function(settings) {
                     var player = playerList[i];
                     addPlayer(player,constructor,false);
                 }
+                return true;
             } catch (err) {
                 console.log(err);
+                return false;
             }
         }
 
