@@ -151,7 +151,7 @@ function startConnection() {
                 }
             }
             break;
-        case "end":
+        case "endGame":
             switch (data.winner) {
                 case 0:
                     ties++;

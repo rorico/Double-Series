@@ -261,7 +261,7 @@ module.exports = function(settings) {
 
         function startNewGame() {
             if (games < maxGame) {
-                waiting = 0;
+                var waiting = 0;
                 var check = function() {
                     if (!waiting) {
                         setTimeout(function() {
@@ -314,6 +314,9 @@ module.exports = function(settings) {
             //copy to not affect outside function
             var send = copyObject(data.all);
             var newCard = data.newCard;
+            var specialData = [];
+            specialData[send.player] = newCard;
+            sendData("play",send,specialData,"newCard");
 
             send.type = "play";
             for (var player = 0 ; player < players.length ; player++) {
@@ -345,33 +348,12 @@ module.exports = function(settings) {
         }
 
         function sendChange(data) {
-            data.type = "change";
-            for (var player = 0 ; player < players.length ; player++) {
-                if (players[player].onChange) {
-                    players[player].onChange(data);
-                }
-            }
-            for (var i = 0 ; i < spectators.length ; i++) {
-                var onChange = spectators[i].onChange;
-                if (onChange) {
-                    onChange(data);
-                }
-            }
+            sendData("change",data);
         }
 
         function sendEnd(winner) {
-            var data = {type:"end",winner:winner};
-            for (var player = 0 ; player < players.length ; player++) {
-                if (players[player].onEndGame) {
-                    players[player].onEndGame(data);
-                }
-            }
-            for (var i = 0 ; i < spectators.length ; i++) {
-                var onEndGame = spectators[i].onEndGame;
-                if (onEndGame) {
-                    onEndGame(data);
-                }
-            }
+            var data = {winner:winner};
+            sendData("endGame",data);
         }
 
         //restart game
@@ -394,33 +376,47 @@ module.exports = function(settings) {
         }
 
         function sendNewGame() {
-            var data = getAllInfo();
-            data.type = "newGame";
-            for (var player = 0 ; player < players.length ; player++) {
-                if (players[player].onNewGame) {
-                    data.hand = hands[player];
-                    players[player].onNewGame(data);
-                }
-            }
-            for (var i = 0 ; i < spectators.length ; i++) {
-                var onNewGame = spectators[i].onNewGame;
-                if (onNewGame) {
-                    onNewGame(data);
-                }
-            }
+            sendData("newGame",getAllInfo(),hands,"hand");
         }
 
         function sendAllDone() {
-            var data = {type:"allDone",bluewin:bluewin,greenwin:greenwin,ties:ties,games:games};
+            var data = {bluewin:bluewin,greenwin:greenwin,ties:ties,games:games};
+            sendData("allDone",data);
+        }
+
+        function sendData(type,data,special,prop) {
+            data.type = type;
+            //assume type isn't empty, want to do camelCase
+            var listener = "on" + type[0].toUpperCase() + type.substr(1);
             for (var player = 0 ; player < players.length ; player++) {
-                if (players[player].onAllDone) {
-                    players[player].onAllDone(data);
+                var listener = players[player][listener];
+                if (listener) {
+                    if (special && special[player] !== undefined) {
+                        data[prop] = special[player];
+                        listener(data);
+                        delete data[prop];
+                    } else {
+                        listener(data);
+                    }
                 }
             }
             for (var i = 0 ; i < spectators.length ; i++) {
-                var onAllDone = spectators[i].onAllDone;
-                if (onAllDone) {
-                    onAllDone(data);
+                var listener = spectators[i][listener];
+                if (listener) {
+                    var specL = spectator.lvl;
+                    if (specL >= 5) {
+                        //send everything
+                        //this might break somethings as its not in the same format
+                        data[prop] = special;
+                        listener(data);
+                        delete data[prop];
+                    } else if (special && special[specL] !== undefined) {
+                        data[prop] = special[specL];
+                        listener(data);
+                        delete data[prop];
+                    } else {
+                        listener(data);
+                    }
                 }
             }
         }
