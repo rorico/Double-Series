@@ -96,7 +96,7 @@ module.exports = function(settings) {
                 ret.change = function(name) {
                     playerNames[player] = name;
                     players[player].name = name;
-                    sendChange({player:player,name:name});
+                    sendData("change",{player:player,name:name});
                 };
                 ret.remove = function() {
                     removePlayer(player);
@@ -163,7 +163,7 @@ module.exports = function(settings) {
                 }
 
                 repeatWait(player); //if empty, nothing happens
-                sendChange({player:player,name:playerObj.name});
+                sendData("change",{player:player,name:playerObj.name});
                 return true;
             } catch (err) {
                 console.log(err.stack);
@@ -250,8 +250,7 @@ module.exports = function(settings) {
                 if (ret.status === 1) {
                     playNext();
                 } else if (ret.status === 3) {
-                    sendEnd(ret.winner);
-                    startNewGame();
+                    handleEndGame();
                 } else {
                     console.log("something went wrong");
                 }
@@ -259,8 +258,20 @@ module.exports = function(settings) {
             }
         }
 
-        function startNewGame() {
+        function sendPlay(data) {
+            //copy to not affect outside function
+            var send = copyObject(data.all);
+            var newCard = data.newCard;
+            var specialData = [];
+            specialData[send.player] = newCard;
+            sendData("play",send,specialData,"newCard");
+        }
+
+        function handleEndGame() {
+            sendData("endGame",{winner:winner});
+
             if (games < maxGame) {
+                //restart game
                 var waiting = 0;
                 var check = function() {
                     if (!waiting) {
@@ -282,78 +293,8 @@ module.exports = function(settings) {
                 }
                 check();
             } else {
-                sendAllDone();
+                sendData("allDone",{bluewin:bluewin,greenwin:greenwin,ties:ties,games:games});
             }
-        }
-
-        //for now, assume callback is the last input into the function
-        function waitFor(player,name,inputs,callback) {
-            if (!callback) {
-                callback = inputs;
-                inputs = [];
-            }
-            var cb = function() {
-                callback.apply(null,arguments);
-                waitingFor[player] = null;
-            };
-            inputs.push(cb);
-            waitingFor[player] = [name,inputs];
-            players[player][name].apply(null,inputs);
-        }
-
-        function repeatWait(player) {
-            var wait = waitingFor[player];
-            if (wait) {
-                var name = wait[0];
-                var inputs = wait[1];
-                players[player][name].apply(null,inputs);
-            }
-        }
-
-        function sendPlay(data) {
-            //copy to not affect outside function
-            var send = copyObject(data.all);
-            var newCard = data.newCard;
-            var specialData = [];
-            specialData[send.player] = newCard;
-            sendData("play",send,specialData,"newCard");
-
-            send.type = "play";
-            for (var player = 0 ; player < players.length ; player++) {
-                var onPlay = players[player].onPlay;
-                if (onPlay) {
-                    if (player === send.player) {
-                        send.newCard = newCard;
-                        onPlay(send);
-                        delete send.newCard;
-                    } else {
-                        onPlay(send);
-                    }
-                }
-            }
-
-            for (var i = 0 ; i < spectators.length ; i++) {
-                var spectator = spectators[i];
-                var onPlay = spectator.onPlay;
-                if (onPlay) {
-                    if (spectator.lvl >= 5 || spectator.lvl === send.player) {
-                        send.newCard = newCard;
-                        onPlay(send);
-                        delete send.newCard;
-                    } else {
-                        onPlay(send);
-                    }
-                }
-            }
-        }
-
-        function sendChange(data) {
-            sendData("change",data);
-        }
-
-        function sendEnd(winner) {
-            var data = {winner:winner};
-            sendData("endGame",data);
         }
 
         //restart game
@@ -372,16 +313,7 @@ module.exports = function(settings) {
             }
             cardsPlayed = [];
             cardsDrawn = [];
-            sendNewGame();
-        }
-
-        function sendNewGame() {
             sendData("newGame",getAllInfo(),hands,"hand");
-        }
-
-        function sendAllDone() {
-            var data = {bluewin:bluewin,greenwin:greenwin,ties:ties,games:games};
-            sendData("allDone",data);
         }
 
         function sendData(type,data,special,prop) {
@@ -418,6 +350,30 @@ module.exports = function(settings) {
                         listener(data);
                     }
                 }
+            }
+        }
+        
+        //for now, assume callback is the last input into the function
+        function waitFor(player,name,inputs,callback) {
+            if (!callback) {
+                callback = inputs;
+                inputs = [];
+            }
+            var cb = function() {
+                callback.apply(null,arguments);
+                waitingFor[player] = null;
+            };
+            inputs.push(cb);
+            waitingFor[player] = [name,inputs];
+            players[player][name].apply(null,inputs);
+        }
+
+        function repeatWait(player) {
+            var wait = waitingFor[player];
+            if (wait) {
+                var name = wait[0];
+                var inputs = wait[1];
+                players[player][name].apply(null,inputs);
             }
         }
 
