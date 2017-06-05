@@ -22,7 +22,6 @@ module.exports = function(settings) {
     var bluewin = 0;
     var ties = 0;
 
-    var maxCards = 108;
     var handLength = 7;
 
     var hands = [];
@@ -304,7 +303,7 @@ module.exports = function(settings) {
             winner = -1;
             nextPlayer = (winningPlayer + 1) % 4;
             shuffle(deck);
-            cardsleft = maxCards;
+            cardsleft = deck.length;
             //4 players
             for (var i = 0 ; i < 4 ; i++) {
                 hands[i] = deck.slice(cardsleft - handLength,cardsleft);
