@@ -85,7 +85,7 @@ var player = {
 };
 //always show alldone
 for (var i = 1 ; i < dbLs.length ; i++) {
-    player[dbLs[i]] = dbL >= i? sendData : null;
+    player[dbLs[i]] = dbL >= i ? sendData : null;
 }
 
 var res = game.addSpectator(player);

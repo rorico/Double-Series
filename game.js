@@ -318,9 +318,9 @@ module.exports = function(settings) {
         function sendData(type,data,special,prop) {
             data.type = type;
             //assume type isn't empty, want to do camelCase
-            var listener = "on" + type[0].toUpperCase() + type.substr(1);
+            var name = "on" + type[0].toUpperCase() + type.substr(1);
             for (var player = 0 ; player < players.length ; player++) {
-                var listener = players[player][listener];
+                var listener = players[player][name];
                 if (listener) {
                     if (special && special[player] !== undefined) {
                         data[prop] = special[player];
@@ -332,26 +332,31 @@ module.exports = function(settings) {
                 }
             }
             for (var i = 0 ; i < spectators.length ; i++) {
-                var listener = spectators[i][listener];
+                var spectator = spectators[i]
+                var listener = spectator[name];
                 if (listener) {
                     var specL = spectator.lvl;
-                    if (specL >= 5) {
-                        //send everything
-                        //this might break somethings as its not in the same format
-                        data[prop] = special;
-                        listener(data);
-                        delete data[prop];
-                    } else if (special && special[specL] !== undefined) {
-                        data[prop] = special[specL];
-                        listener(data);
-                        delete data[prop];
+                    if (prop) {
+                        if (specL >= 5) {
+                            //send everything
+                            //this might break somethings as its not in the same format
+                            data[prop] = special;
+                            listener(data);
+                            delete data[prop];
+                        } else if (special && special[specL] !== undefined) {
+                            data[prop] = special[specL];
+                            listener(data);
+                            delete data[prop];
+                        } else {
+                            listener(data);
+                        }
                     } else {
                         listener(data);
                     }
                 }
             }
         }
-        
+
         //for now, assume callback is the last input into the function
         function waitFor(player,name,inputs,callback) {
             if (!callback) {
