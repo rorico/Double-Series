@@ -13,14 +13,16 @@ module.exports = function(settings) {
     var checkValid = true;
     var defaultAI = "playAIphil";
     var maxNumHumanPlayers = 4;
+    //subject to change
+    //this represents the value of pieces on points board
+    //this number + 1 is a finished tile
+    var teams = [1,3];
 
     //game parts
     var deck = [];
     var games = 0;
     var nextPlayer = 0;
-    var greenwin = 0;
-    var bluewin = 0;
-    var ties = 0;
+    var wins = [];
 
     var handLength = 7;
 
@@ -292,7 +294,7 @@ module.exports = function(settings) {
                 }
                 check();
             } else {
-                sendData("allDone",{bluewin:bluewin,greenwin:greenwin,ties:ties,games:games});
+                sendData("allDone",{wins:wins,games:games,allGames:allGames});
             }
         }
 
@@ -400,8 +402,7 @@ module.exports = function(settings) {
 
         function getAllInfo() {
             var info = getInfo();
-            info.bluewin = bluewin;
-            info.greenwin = greenwin;
+            info.wins = wins;
             info.games = games;
             info.playerNames = playerNames;
             info.handLengths = handLengths;
@@ -609,16 +610,18 @@ module.exports = function(settings) {
 
     //updates gameEnd if game is done
     function checkGameDone() {
-        if (board.linesDone[3] >= 2) {
-            winner = 3;
-            greenwin++;
-            games++;
-            gameEnd = true;
-        } else if (board.linesDone[1] >= 2) {
-            winner = 1;
-            bluewin++;
-            games++;
-            gameEnd = true;
+        for (var i = 0 ; i < teams.length ; i++) {
+            var team = teams[i];
+            if (board.linesDone[team] >= 2) {
+                winner = team;
+                if (wins[team]) {
+                    wins[team]++;
+                } else {
+                    wins[team] = 1;
+                }
+                games++;
+                gameEnd = true;
+            }
         }
     }
 
@@ -632,7 +635,7 @@ module.exports = function(settings) {
         //no cards left
         gameEnd = true;
         winner = 0;
-        ties++;
+        //don't need a counter for ties
         games++;
     }
 

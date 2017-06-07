@@ -4,8 +4,7 @@ var games = 0;
 //game parts
 var board;
 var helper;
-var greenwin = 0;
-var bluewin = 0;
+var wins = [];
 var ties = 0;
 
 var maxCards = 108;
@@ -93,13 +92,10 @@ function startConnection() {
 
             if (data.games) {
                 games = data.games;
-                if (data.bluewin) {
-                    bluewin = data.bluewin;
-                    $("#bluewin").text(getPercentage(bluewin,games));
-                }
-                if (data.greenwin) {
-                    greenwin = data.greenwin;
-                    $("#greenwin").text(getPercentage(greenwin,games));
+                if (data.wins) {
+                    wins = data.wins;
+                    $("#bluewin").text(getPercentage(wins[1],games));
+                    $("#greenwin").text(getPercentage(wins[3],games));
                 }
             }
             if (data.nextPlayer !== undefined) {
@@ -153,19 +149,16 @@ function startConnection() {
             break;
         case "endGame":
             switch (data.winner) {
-                case 0:
-                    ties++;
-                    break;
                 case 1:
-                    bluewin++;
+                    wins[1]++;
                     break;
                 case 3:
-                    greenwin++;
+                    wins[3]++;
                     break;
             }
             games++;
-            $("#bluewin").text(getPercentage(bluewin,games));
-            $("#greenwin").text(getPercentage(greenwin,games));
+            $("#bluewin").text(getPercentage(wins[1],games));
+            $("#greenwin").text(getPercentage(wins[3],games));
             showNewGame();
             break;
         case "newGame":
