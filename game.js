@@ -13,6 +13,8 @@ module.exports = function(settings) {
     var checkValid = true;
     var defaultAI = "playAIphil";
     var maxNumHumanPlayers = 4;
+    var storeData = false;
+    var allGames = [];
     //subject to change
     //this represents the value of pieces on points board
     //this number + 1 is a finished tile
@@ -28,6 +30,7 @@ module.exports = function(settings) {
 
     var hands = [];
     var handLengths = [];
+    var startingHands = []; //for the purpose of replays
     var cardsleft;
     var cardsPlayed;
     var cardsDrawn;
@@ -41,6 +44,7 @@ module.exports = function(settings) {
             speed = obj.speed === undefined ? speed : obj.speed;
             checkValid = obj.checkValid === undefined ? checkValid : obj.checkValid;
             maxNumHumanPlayers = obj.maxNumHumanPlayers === undefined ? maxNumHumanPlayers : obj.maxNumHumanPlayers;
+            storeData = obj.storeData === undefined ? storeData : obj.storeData;
         }
     };
 
@@ -95,6 +99,7 @@ module.exports = function(settings) {
             if (player !== -1 && addPlayer(player,playerObj,true)) {
                 ret.success = true;
                 ret.change = function(name) {
+                    //for now, these changes won't be held in replays
                     playerNames[player] = name;
                     players[player].name = name;
                     sendData("change",{player:player,name:name});
@@ -269,6 +274,7 @@ module.exports = function(settings) {
         }
 
         function handleEndGame() {
+            storeGame();
             sendData("endGame",{winner:winner});
 
             if (games < maxGame) {
@@ -312,9 +318,29 @@ module.exports = function(settings) {
                 handLengths[i] = handLength;
                 cardsleft -= handLength;
             }
+            startingHands = copyObject(hands);
             cardsPlayed = [];
             cardsDrawn = [];
             sendData("newGame",getAllInfo(),hands,"hand");
+        }
+
+        function storeGame() {
+            //this is kinda expensive, may want to change this later
+            if (!storeData) {
+                return;
+            }
+            //merge cards drawn and cards played
+            //don't merge beforehand because that data is sent during the game
+            for (var i = 0 ; i < cardsPlayed.length ; i++) {
+                if (i < cardsDrawn.length) {
+                    cardsPlayed[i].newCard = cardsDrawn[i];
+                }
+            }
+            allGames.push({
+                cardsPlayed:cardsPlayed,
+                playerNames:copyObject(playerNames),
+                startingHands:startingHands
+            });
         }
 
         function sendData(type,data,special,prop) {
