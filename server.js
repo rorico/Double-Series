@@ -20,12 +20,15 @@ var activeGames = {"0":newGame()};
 
 var server = http.createServer(function(request, response) {
     var svrUrl = url.parse(request.url);
-    var filename = svrUrl.path;
-    //paths with numbers in them correspond to specific games
-    if (filename === "/game" || filename === "/" || activeGames.hasOwnProperty(filename.substring(1))) {
+    var filename = svrUrl.pathname;
+    //paths with numbers in  hem correspond to specific games
+    filename = filename.substr(1);
+    if (!filename | filename === "game" || activeGames.hasOwnProperty(filename)) {
         filename = "Double Series.html";
+    } else if (filename === "replay") {
+        filename = "replay.html";
     }
-    filename = path.basename(filename.replace(/\%20/g," "));
+    filename = filename.replace(/\%20/g," ");
     fs.access(filename, function(err) {
         if (err) {
             response.writeHead(404, {"Content-Type": "text/plain"});

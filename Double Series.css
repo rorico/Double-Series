@@ -179,7 +179,7 @@ div, td {
     top: 50%;
     transform: translate(-50%, -50%);
 }
-#modal .block {
+.block {
     border-radius: 5px;
     font-size: 30px;
     border: 1px black solid;
@@ -189,4 +189,12 @@ div, td {
 .inline {
     display:inline-block;
     padding: 5px;
+}
+#controls {
+    font-size: 30px;
+    margin: 10px;
+    text-align: center;
+}
+#controls .block {
+    width: 100px;
 }

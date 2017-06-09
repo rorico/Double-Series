@@ -151,9 +151,10 @@ function newPlayers() {
 
 function cardHtml(player) {
     var html = "";
-    if (player === me) {
-        for (var i = 0 ; i < hands[player].length ; i++) {
-            html += "<div id='p" + player + "_" + i + "'>" + changeToCards(hands[player][i]) + "</div>";
+    var hand = hands[player];
+    if (hand) {
+        for (var i = 0 ; i < hand.length ; i++) {
+            html += "<div id='p" + player + "_" + i + "'>" + changeToCards(hand[i]) + "</div>";
         }
     } else {
         //should be defined, but assume 7 incase
@@ -194,8 +195,7 @@ function cardPlayedEle(obj,team) {
 
 function newGameDisplay() {
     for (var i = 1 ; i <= 100 ; i++) {
-        $("#"+i).removeClass();
-        $("#"+i).addClass("v0");
+        $("#"+i).removeClass().addClass("v0");
     }
     $("#cardHolder").empty();
     //may want to move this somewhere else
