@@ -24,12 +24,12 @@ var validOptions = {
     "-c": {
         opt: "checkValid",
         type: "start",
-        parse: function(str) {return !!str;}
+        parse: function(str) {return checkBoolean(str);}
     },
     "-s": {
         opt: "storeData",
         type: "start",
-        parse: function(str) {return !!str;}
+        parse: function(str) {return checkBoolean(str);}
     },
     "-a": {
         opt: "defaultAI",
@@ -107,4 +107,10 @@ if (res.success) {
     process.stdin.resume();
 } else {
     console.log("couldn't add simulation");
+}
+
+function checkBoolean(str) {
+    if (!str || !str.length || str === "0" || str.toLowerCase() === "false")
+        return false;
+    return true;
 }
