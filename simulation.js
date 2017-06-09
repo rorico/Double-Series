@@ -1,9 +1,11 @@
 const newGame = require("./game");
+const fs = require("fs");
 
 var defaultSettings = {
     speed:0,
     maxGame:100,
-    checkValid:true
+    checkValid:true,
+    storeData:true
 };
 var AIs = [];
 var dbL = 1;
@@ -21,6 +23,11 @@ var validOptions = {
     },
     "-c": {
         opt: "checkValid",
+        type: "start",
+        parse: function(str) {return !!str;}
+    },
+    "-s": {
+        opt: "storeData",
         type: "start",
         parse: function(str) {return !!str;}
     },
@@ -44,8 +51,8 @@ var validOptions = {
     }
 };
 
-var args = process.argv;
-for (var i = 2 ; i < args.length ; i++) {
+var args = process.argv.slice(2);
+for (var i = 0 ; i < args.length ; i++) {
     var arg = args[i];
     var option = validOptions[arg];
     if (option) {
@@ -80,6 +87,12 @@ var player = {
     lvl:5,
     onAllDone:function(info) {
         console.log(info);
+        if (info.allGames && info.allGames.length) {
+            var timestamp = (new Date()).toISOString().replace(/:/g,"'");
+            var filename = "games/simulation" + args.join("") + "-" + timestamp + ".json";
+            console.log(filename)
+            fs.writeFile(filename,JSON.stringify(info.allGames));
+        }
         process.stdin.pause();
     }
 };
