@@ -26,19 +26,39 @@ var server = http.createServer(function(request, response) {
     if (!filename | filename === "game" || activeGames.hasOwnProperty(filename)) {
         filename = "Double Series.html";
     } else if (filename === "replay") {
-        filename = "replay.html";
-    }
-    filename = filename.replace(/\%20/g," ");
-    fs.access(filename, function(err) {
-        if (err) {
-            response.writeHead(404, {"Content-Type": "text/plain"});
-            response.end("Game doesn't exist\n");
+        //if no game specified, show replay list
+        if (svrUrl.query) {
+            filename = "replay.html";
         } else {
-            response.writeHead(200, {"Content-Type": mimeTypes[path.extname(filename)]});
-            var fileStream = fs.createReadStream(filename);
-            fileStream.pipe(response);
+            filename = "replayList.html";
         }
-    });
+    }
+
+    if (filename === "replayList") {
+        //oh boy
+        fs.readdir("games",function(err,files) {
+            if (err) {
+                response.writeHead(404, {"Content-Type": "text/plain"});
+                response.end("something went wrong\n");
+            } else {
+                response.writeHead(200, {"Content-Type": "application/json"});
+                response.end(JSON.stringify(files));
+            }
+        });
+        return;
+    } else {
+        filename = filename.replace(/\%20/g," ");
+        fs.access(filename, function(err) {
+            if (err) {
+                response.writeHead(404, {"Content-Type": "text/plain"});
+                response.end("Game doesn't exist\n");
+            } else {
+                response.writeHead(200, {"Content-Type": mimeTypes[path.extname(filename)]});
+                var fileStream = fs.createReadStream(filename);
+                fileStream.pipe(response);
+            }
+        });
+    }
 }).listen(port,function() {
     console.log("Server running at http://" + ip + ":" + port);
 });

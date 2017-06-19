@@ -43,7 +43,7 @@ $(document).ready(function() {
 
     //get filename from query
     $.ajax({
-        url: location.search.substr(1),
+        url: decodeURIComponent(location.search.substr(1)),
         success: function(data) {
             games = JSON.parse(data);
             if (games.length) {
