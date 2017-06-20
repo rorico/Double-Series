@@ -45,7 +45,7 @@ $(document).ready(function() {
     $.ajax({
         url: decodeURIComponent(location.search.substr(1)),
         success: function(data) {
-            games = JSON.parse(data);
+            games = data;
             if (games.length) {
                 changeGame(0);
                 display();

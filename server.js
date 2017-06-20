@@ -9,7 +9,8 @@ var mimeTypes = {
     ".html": "text/html",
     ".js": "text/javascript",
     ".css": "text/css",
-    ".ico": "image/x-icon"
+    ".ico": "image/x-icon",
+    ".json": "application/json"
 };
 var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8081,
     ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0";
@@ -34,14 +35,14 @@ var server = http.createServer(function(request, response) {
         }
     }
 
-    if (filename === "replayList") {
-        //oh boy
+    if (filename === "replayList.json") {
+        //this file doesn't exist, its dynamic
         fs.readdir("games",function(err,files) {
             if (err) {
                 response.writeHead(404, {"Content-Type": "text/plain"});
                 response.end("something went wrong\n");
             } else {
-                response.writeHead(200, {"Content-Type": "application/json"});
+                response.writeHead(200, {"Content-Type": mimeTypes[path.extname(filename)]});
                 response.end(JSON.stringify(files));
             }
         });
