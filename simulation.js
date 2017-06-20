@@ -86,13 +86,14 @@ var sendData = function(info) {
 var player = {
     lvl:5,
     onAllDone:function(info) {
-        console.log(info);
         if (info.allGames && info.allGames.length) {
             var timestamp = (new Date()).toISOString().replace(/:/g,"'");
             var filename = "games/simulation" + args.join("") + "-" + timestamp + ".json";
-            console.log(filename)
             fs.writeFile(filename,JSON.stringify(info.allGames));
+            info.filename = filename;
+            delete info.allGames;
         }
+        console.log(info);
         process.stdin.pause();
     }
 };
