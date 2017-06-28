@@ -4,14 +4,9 @@ const fs = require("fs");
 const path = require("path");
 const WebSocketServer = require("websocket").server;
 const newGame = require("./game.js");
+const express = require("express");
+var app = express();
 
-var mimeTypes = {
-    ".html": "text/html",
-    ".js": "text/javascript",
-    ".css": "text/css",
-    ".ico": "image/x-icon",
-    ".json": "application/json"
-};
 var port = process.env.PORT || 8081,
     ip   = process.env.IP || "0.0.0.0";
 
@@ -19,12 +14,12 @@ var port = process.env.PORT || 8081,
 var currentGameId = 0;
 var activeGames = {"0":newGame()};
 
-var server = http.createServer(function(request, response) {
-    var svrUrl = url.parse(request.url);
+app.use(function(req,res,next) {
+    var svrUrl = url.parse(req.url);
     var filename = svrUrl.pathname;
     //paths with numbers in  hem correspond to specific games
     filename = filename.substr(1);
-    if (!filename | filename === "game" || activeGames.hasOwnProperty(filename)) {
+    if (!filename || filename === "game" || activeGames.hasOwnProperty(filename)) {
         filename = "Double Series.html";
     } else if (filename === "replay") {
         //if no game specified, show replay list
@@ -34,42 +29,30 @@ var server = http.createServer(function(request, response) {
             filename = "replayList.html";
         }
     }
-
-    if (filename === "replayList.json") {
-        //this file doesn't exist, its dynamic
-        fs.readdir("games",function(err,files) {
-            if (err) {
-                response.writeHead(404, {"Content-Type": "text/plain"});
-                response.end("something went wrong\n");
-            } else {
-                response.writeHead(200, {"Content-Type": mimeTypes[path.extname(filename)]});
-                response.end(JSON.stringify(files));
-            }
-        });
-        return;
-    } else {
-        filename = filename.replace(/\%20/g," ");
-        fs.access(filename, function(err) {
-            if (err) {
-                response.writeHead(404, {"Content-Type": "text/plain"});
-                response.end("Game doesn't exist\n");
-            } else {
-                response.writeHead(200, {"Content-Type": mimeTypes[path.extname(filename)]});
-                var fileStream = fs.createReadStream(filename);
-                fileStream.pipe(response);
-            }
-        });
-    }
-}).listen(port,function() {
+    req.url = "/" + filename;
+    next();
+});
+app.use(express.static("./"));
+app.get("/replayList.json",function(req,res,next) {
+    fs.readdir("games",function(err,files) {
+        if (err) {
+            res.status(404).send("something went wrong");
+        } else {
+            res.json(files);
+        }
+    });
+});
+// do this for websocket
+var server = http.createServer(app);
+server.listen(port,function() {
     console.log("Server running at http://" + ip + ":" + port);
 });
-
 
 var wsServer = new WebSocketServer({
     httpServer: server
 });
 
-wsServer.on('request', function(request) {
+wsServer.on("request", function(request) {
     var connection = request.accept(null, request.origin);
     var query = request && request.resourceURL && request.resourceURL.query;
     var gameId = query.game;
