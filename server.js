@@ -12,8 +12,8 @@ var mimeTypes = {
     ".ico": "image/x-icon",
     ".json": "application/json"
 };
-var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8081,
-    ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0";
+var port = process.env.PORT || 8081,
+    ip   = process.env.IP || "0.0.0.0";
 
 //start with a game
 var currentGameId = 0;
