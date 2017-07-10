@@ -329,17 +329,23 @@ module.exports = function(settings) {
             if (!storeData) {
                 return;
             }
+            //want to include minimal information to be able to recreate the entire game
+
             //merge cards drawn and cards played
-            //don't merge beforehand because that data is sent during the game
+            //have to merge at end game because that data is sent during the game
             for (var i = 0 ; i < cardsPlayed.length ; i++) {
+                var card = cardsPlayed[i];
                 if (i < cardsDrawn.length) {
-                    cardsPlayed[i].newCard = cardsDrawn[i];
+                    card.newCard = cardsDrawn[i];
                 }
             }
             allGames.push({
                 cardsPlayed:cardsPlayed,
                 playerNames:copyObject(playerNames),
-                startingHands:startingHands
+                startingHands:startingHands,
+                teams:teams,
+                //winner can be calculated, but its easier to just add anyways
+                winner:winner
             });
         }
 
