@@ -24,7 +24,7 @@ module.exports = function(settings) {
     var deck = [];
     var games = 0;
     var nextPlayer = 0;
-    var wins = [];
+    var wins = {};
 
     var handLength = 7;
 
