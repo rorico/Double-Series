@@ -27,28 +27,69 @@ function calc(num,double,tot) {
         return data[num][double][tot];
     }
 
-    var ret = 1;
+    var nu = 1;
+    var den = 1;
+
     if (!num) {
-        ret = 0;
+        nu = 0;
     } else {
         // pick up neither
-        var chance = (tot - num - double)/tot;
-        if (chance > 0) {
-            ret += chance * calc(num,double,tot - 1);
+        var chanceN;
+        var chanceD = tot * num;
+
+        var nums = [];
+        var dens = [];
+
+        chanceN = (tot - num - double) * num;
+        if (chanceN > 0) {
+            var rec = calc(num,double,tot - 1);
+            nums.push(chanceN * rec[0]);
+            dens.push(rec[1]);
         }
 
         // pick up card with two copies
-        var chance = (num + double)/tot * double/num;
-        if (chance > 0) {
-            ret += chance * calc(num-1,double-1,tot-1);
+        chanceN = (num + double) * double;
+        if (chanceN > 0) {
+            var rec = calc(num-1,double-1,tot-1);
+            nums.push(chanceN * rec[0]);
+            dens.push(rec[1]);
         }
 
         // pick up card with one copy   
-        var chance = (num + double)/tot * (num-double)/num;
-        if (chance > 0) {
-            ret += chance * calc(num - 1,double,tot-1);
+        chanceN = (num + double) * (num - double);
+        if (chanceN > 0) {
+            var rec = calc(num - 1,double,tot-1);
+            nums.push(chanceN * rec[0]);
+            dens.push(rec[1]);
         }
-    data[num][double][tot] = ret;
+
+        var fullN = 0;
+        var fullD = chanceD;
+        for (var i = 0 ; i < nums.length ; i++) {
+            fullD *= dens[i];
+            var n = nums[i];
+            for (var j = 0 ; j < nums.length ; j++) {
+                if (i === j) continue;
+                n *= dens[j];
+            }
+            fullN += n;
+        }
+        den = fullD;
+        nu = fullN + den;
+        console.log(num,double,tot)
+        data[num][double][tot] = reduce(nu,den);
     }
-    return ret;
+    return [nu,den];
+}
+
+function reduce(num,den) {
+        console.log(num,den);
+    for (var i = 2 ; i <= num && i <= den ; i++) {
+        if (num % i === 0 && den % i === 0) {
+            num /= i;
+            den /= i;
+            i--;
+        }
+    }
+    return [num,den]
 }
