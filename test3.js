@@ -46,4 +46,5 @@ function calc(num,double,tot) {
         }
         data[num][double] = ret/(tot + 1);
     }
+    return ret;
 }
