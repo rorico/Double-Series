@@ -1,0 +1,1 @@
+node simulation.js -a playProb,playAIphil -m 10
