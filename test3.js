@@ -34,13 +34,13 @@ function calc(num,double,tot) {
         }
 
         // pick up card with two copies
-        var chance = (num + double)/tot * double/num;
+        var chance = double/tot * 2;
         if (chance > 0) {
             ret += chance * calc(num-1,double-1,tot-1);
         }
 
         // pick up card with one copy   
-        var chance = (num + double)/tot * (num-double)/num;
+        var chance = (num - double)/tot;
         if (chance > 0) {
             ret += chance * calc(num - 1,double,tot-1);
         }

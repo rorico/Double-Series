@@ -1,7 +1,7 @@
 const fs = require("fs");
 
 const NUM_TESTS = 1000;
-
+// THIS TEST IS NO LONGER ACCURATE
 var data = [];
 
 for (var num = 1 ; num <= 5 ; num++) {
