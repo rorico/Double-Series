@@ -167,7 +167,7 @@ function cardHtml(player) {
 }
 
 function cardHistorySetup() {
-    $("#card_played").append("<div id='placeholder' class='block'><div id='cardHolder'></div></div>");
+    $("#card_played").append("<div id='placeholder' class='card'><div id='cardHolder'></div></div>");
     $("#cardHolder").hover(function(){
         $("#cardHolder").css("maxHeight","250px");
     },function(){
@@ -180,7 +180,7 @@ function addCardPlayed(obj,team) {
 }
 
 function cardPlayedEle(obj,team) {
-    var card = $("<div class='c"+team+" block'>"+changeToCards(obj.cardPlayed)+"</div>");
+    var card = $("<div class='c"+team+" card'>"+changeToCards(obj.cardPlayed)+"</div>");
     var position = obj.position;
     card.hover(function(){
         $("body").append("<div class='hide'></div>");
