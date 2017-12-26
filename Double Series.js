@@ -71,6 +71,10 @@ function startConnection() {
                     hands[me] = data.hand;
                 }
             }
+
+            board = newBoard(data);
+            helper = boardHelper(board.points);
+
             if (data.handLengths) {
                 handLengths = data.handLengths;
             }
@@ -87,8 +91,6 @@ function startConnection() {
                     }
                 }
             }
-            board = newBoard(data);
-            helper = boardHelper(board.points);
 
             if (data.games) {
                 games = data.games;
