@@ -8,9 +8,29 @@ for (var num = 1 ; num <= 5 ; num++) {
     data[num] = [];
     for (var double = 0 ; double <= num ; double++) {
         data[num][double] = [];
-        for (var tot = num + double ; tot <= 108 ; tot++) {
+        for (var tot = num + double ; tot <= num + double + 1 ; tot++) {
             calc(num,double,tot)
         }
+    }
+}
+
+
+
+for (var num = 1 ; num <= 5 ; num++) {
+    for (var double = 0 ; double <= num ; double++) {
+        var max = 0;
+        for (var tot = num + double ; tot <= 108 ; tot++) {
+            if (data[num][double][tot]) {
+                if (data[num][double][tot][1] > max) {
+                    max = data[num][double][tot][1];
+                }
+                //data[num][double][tot] = data[num][double][tot][0]  + "/" + data[num][double][tot][1];
+            }
+        }
+        var cnt = 0;
+        var change = data[num][double][21][0] * max / data[num][double][21][1] - data[num][double][20][0] * max / data[num][double][20][1];
+        var start = data[num][double][21][0] * max / data[num][double][21][1] - change * 21;
+        data[num][double] = num + " " + double + ": " + max + " (" + primeFactor(max) + ") " + start + " + " + change + "n";
     }
 }
 fs.writeFile("test2.json",JSON.stringify(data,null,4));
@@ -92,4 +112,18 @@ function reduce(num,den) {
         }
     }
     return [num,den]
+}
+
+function primeFactor(num) {
+    var ret = [];
+    for (var i = 2 ; i <= num ; i++) {
+        if (num % i === 0) {
+            ret.push(i);
+            num /= i;
+            if (num === 1) {
+                return ret;
+            }
+            i--;
+        }
+    }
 }
