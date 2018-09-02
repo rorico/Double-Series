@@ -1,6 +1,6 @@
 //get filename from query
 $.ajax({
-    url: "replayList.json",
+    url: "/replayList.json",
     success: function(games) {
         for (var i = 0 ; i < games.length ; i++) {
             val = games[i];

@@ -33,6 +33,7 @@ app.use(function(req,res,next) {
     next();
 });
 app.use(express.static("./"));
+app.use(express.static("./frontend"));
 app.get("/replayList.json",function(req,res,next) {
     fs.readdir("games",function(err,files) {
         if (err) {
