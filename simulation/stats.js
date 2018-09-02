@@ -1,6 +1,6 @@
-const newGame = require("./game");
+const newGame = require("../game");
 const fs = require("fs");
-const newHelper = require("./boardHelper");
+const newHelper = require("../boardHelper");
 
 var file = process.argv[2];
 fs.readFile(file,function(err,data) {

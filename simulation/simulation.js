@@ -1,4 +1,4 @@
-const newGame = require("./game");
+const newGame = require("../game");
 const fs = require("fs");
 
 var defaultSettings = {
