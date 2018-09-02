@@ -14,6 +14,7 @@ function boardHelper(points) {
         removeJoptions:removeJoptions
     };
     
+    //DEPRECATED
     //array of options that player can play
     //Output [card][side][row x, col y]
     function getOptions(cards) {
