@@ -1,6 +1,73 @@
 var helpers = require("./playHelper.js");
 var constants = require("../constants");
 
+var calc; 
+var base;
+(function() {
+    //from various tests, it turns out that chance of getting n cards out of m cards,
+    //where x cards have two in the deck follows a formula of (m+1)*c, where c is a constant.
+    //I don't quite know how this is the case, but it looks like it.
+    var data = [];
+    //for jokers case, will only be 3 or 4, won't be counted towards double, but will towards num
+    //if two jokers, just treat as normal and pass 0 for joker
+    calc = function(num,double,joker,tot) {
+        console.log(joker);
+        if (!joker) {
+            joker = 0;
+        }
+        if (!data[joker]) {
+            data[joker] = [];
+        }
+        if (!data[joker][num]) {
+            data[joker][num] = [];
+        }
+        if (data[joker][num][double]) {
+            return data[joker][num][double] * (tot + 1);
+        }
+
+        var ret = 1;
+        if (!num) {
+            ret = 0;
+        } else {
+            // pick up neither
+            var chance = (tot - num - double)/tot;
+            if (chance > 0) {
+                ret += chance * calc(num,double,joker,tot-1);
+            }
+
+            // pick up card with two copies
+            var chance = 2 * double/tot;
+            if (chance > 0) {
+                ret += chance * calc(num-1,double-1,joker,tot-1);
+            }
+
+            // pick up card with one copy   
+            var chance = (num - double - (joker ? 1 : 0))/tot;
+            if (chance > 0) {
+                ret += chance * calc(num-1,double,joker,tot-1);
+            }
+
+            // pick up joker   
+            var chance = joker/tot;
+            if (chance > 0) {
+                ret += chance * calc(num-1,double,0,tot-1);
+            }
+
+            data[joker][num][double] = ret/(tot + 1);
+        }
+        return ret;
+    }
+    base = function(num,double,joker) {
+        calc(num,double,joker,num + double + joker);
+        if (!num) {
+            return 0;
+        } else {
+            return data[joker][num][double];
+        }
+    }
+})();
+
+
 var playProb = module.exports = function(info) {
     var helper = helpers(info.board,info.points);
     var getOptions = helper.getOptions;
@@ -26,10 +93,11 @@ var playProb = module.exports = function(info) {
     var turnsToFinish = Infinity;
     var linesPartialDone = [];
 
-    var teams = [1,3]; //list of teams, may change in future
-    var possible = [];
-    var references = [];
-    var cardsLeft = [];
+    var teams = [1,3];      //list of teams, may change in future
+    var possible = [];      //list of all lines
+    var references = [];    //holds all possible lines given x,y ; returns indexes
+    var cardsToFinish = []; //organizes lines based on how many left to finish for each team
+    var cardsLeft = [];     //cards left of every card
     var totCardsLeft;
     var numPlusJ;
     var numMinusJ;
@@ -109,10 +177,15 @@ var playProb = module.exports = function(info) {
             var team = teams[i];
             linesPartialDone[team] = [];
             turnsToWin[team] = Infinity;
+            cardsToFinish[team] = [];
+            for (var j = 0 ; j < 5 ; j++) {
+                cardsToFinish[team] = [];
+            }
             for (var j = 0 ; j < possible.length ; j++) {
                 var p = possible[j];
                 p.turnsToFinish[team] = Infinity;
                 p.cardsToFinish[team] = 5;
+                cardsToFinish[5] = j;
             }
         }
         //console.log(me,linesPartialDone);
@@ -162,26 +235,47 @@ var playProb = module.exports = function(info) {
 
         var turnsToFinish = 0;
         var cardsToFinish = 0;
+
+        var cardsNeeded = {};
+        var numNeeded = 0;
+        function addToNeeded(card) {
+            cardsNeeded[card] = cardsNeeded[card] ? numNeeded++, 1 : cardsNeeded[card] + 1;
+        }
+
         for (var j = 0 ; j < 5 ; j++) {
             var x = start[0] + j*dir[0];
             var y = start[1] + j*dir[1];
             var point = points[x][y];
             if (point === 0) {
+                //nothing there
                 //calculate below
             } else if (point === curTeam) {
+                //my team, doesn't add
                 continue;
             } else if (point % 2 === 1) {
-                //even means its completed
-                cardsToFinish++;
-                //console.log("test",x,y)
-                turnsToFinish += turns(-1);
+                addToNeeded(-1);
             } else {
-                turnsToFinish = Infinity;
-                break;
+                //completed line on either team
+                return;
             }
+
             var cardNeeded = board[x][y];
-            cardsToFinish++;
-            turnsToFinish += turns(cardNeeded);
+            addToNeeded(cardNeeded);
+        }
+
+        //only for me, change later
+        for (var card in cardsNeeded) {
+            for (var i = 0 ; i < hand.length ; i++) {
+                if (hand[i] === cardsNeeded[card]) {
+                    cardsNeeded[card]--;
+                    if (!cardsNeeded[card]) {
+                        delete cardsNeeded[card];
+                    }
+                }
+            }
+        }
+
+        for (var card in cardsNeeded) {
         }
 
         var partial = linesPartialDone[curTeam];
@@ -322,10 +416,11 @@ var playProb = module.exports = function(info) {
     }
 
     function probSetup() {
-        start(1,1);
-        start(1,0);
-        start(0,1);
-        start(1,-1);
+        //note this is fairly non optimized, but only gets run once
+        addPossible(1,1);
+        addPossible(1,0);
+        addPossible(0,1);
+        addPossible(1,-1);
         for (var i = 0 ; i < 10 ; i++) {
             var temp = [];
             for (var j = 0 ; j < 10 ; j++) {
@@ -344,8 +439,22 @@ var playProb = module.exports = function(info) {
                 references[x + j*dirX][y + j*dirY].push(i);
             }
         }
-
+        for (var i = 0 ; i < possible.length ; i++) {
+            for (var j = i + 1 ; j < possible.length ; j++) {
+                var shared = sharePoints(possible[i],possible[j])
+                if (shared[0] > 2) {
+                    possible[i].collisions.push(j);
+                    possible[j].collisions.push(i);
+                } else if (shared[0]) {
+                    possible[i].singleCols.push(j);
+                    possible[j].singleCols.push(i);
+                }
+                possible[i].sharedCards[j].push(shared[1]);
+                possible[j].sharedCards[i].push(shared[1]);
+            }
+        }
         function sharePoints(line1,line2) {
+            var cards = 0;
             var cnt = 0;
             for (var i = 0 ; i < 4 ; i++) {
                 var x1 = line1.position[0] + i*line1.direction[0];
@@ -355,14 +464,16 @@ var playProb = module.exports = function(info) {
                     var y2 = line2.position[1] + i*line2.direction[1];
                     if (x1===x2 && y1===y2) {
                         cnt++;
+                    } else if (board[x1][y2] && board[x2][y2]) {
+                        cards.push(board[x1][x2]);
                     }
                 }
             }
-            return cnt;
+            return [cnt,cards];
         }
     }
 
-    function start(dirX,dirY) {
+    function addPossible(dirX,dirY) {
         for (var x = 0 ; x < 10 ; x++) {
             for (var y = 0 ; y < 10 ; y++) {
                 if (!outOfBounds(x,y) && !outOfBounds(x + 4*dirX,y + 4*dirY)) {
@@ -372,6 +483,9 @@ var playProb = module.exports = function(info) {
                         direction:[dirX,dirY],
                         //to be filled in later
                         collisions:[],
+                        //single collisions that can be used for double series
+                        singleCols:[],
+                        sharedCards:[],
                         turnsToFinish:[],
                         cardsToFinish:[]
                         //this will hold other stuff
