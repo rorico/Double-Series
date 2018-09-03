@@ -17,7 +17,7 @@ var activeGames = {"0":newGame()};
 app.use(function(req,res,next) {
     var svrUrl = url.parse(req.url);
     var filename = svrUrl.pathname;
-    //paths with numbers in  hem correspond to specific games
+    //paths with numbers in them correspond to specific games
     filename = filename.substr(1);
     if (!filename || filename === "game" || activeGames.hasOwnProperty(filename)) {
         filename = "Double Series.html";
