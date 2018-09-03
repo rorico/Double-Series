@@ -1,7 +1,8 @@
 const fs = require("fs");
 
-const NUM_TESTS = 1000;
-// THIS TEST IS NO LONGER ACCURATE
+//from various tests, it turns out that chance of getting n cards out of m cards,
+//where x cards have two in the deck follows a formula of (m+1)*c, where c is a constant.
+//I don't quite know how this is the case, but it looks like it.
 var data = [];
 
 for (var num = 1 ; num <= 5 ; num++) {
@@ -18,25 +19,17 @@ for (var num = 1 ; num <= 5 ; num++) {
 
 for (var num = 1 ; num <= 5 ; num++) {
     for (var double = 0 ; double <= num ; double++) {
-        var max = 0;
-        for (var tot = num + double ; tot <= 108 ; tot++) {
-            if (data[num][double][tot]) {
-                if (data[num][double][tot][1] > max) {
-                    max = data[num][double][tot][1];
-                }
-                //data[num][double][tot] = data[num][double][tot][0]  + "/" + data[num][double][tot][1];
-            }
-        }
-        var cnt = 0;
-        var change = data[num][double][21][0] * max / data[num][double][21][1] - data[num][double][20][0] * max / data[num][double][20][1];
-        var start = data[num][double][21][0] * max / data[num][double][21][1] - change * 21;
-        data[num][double] = num + " " + double + ": " + max + " (" + primeFactor(max) + ") " + start + " + " + change + "n";
+        var tot = num + double;
+        var num1 = data[num][double][tot];
+        var num2 = data[num][double][tot+1];
+        var numer = num2[0] * num1[1] - num1[0] * num2[1];
+        var denom = num1[1] * num2[1];
+        data[num][double] = reduce(numer,denom).join("/");
     }
 }
 fs.writeFile("test2.json",JSON.stringify(data,null,4));
 
 function calc(num,double,tot) {
-    //console.log(num,double,tot)
     if (!data[num]) {
         data[num] = [];
     }
@@ -53,14 +46,15 @@ function calc(num,double,tot) {
     if (!num) {
         nu = 0;
     } else {
-        // pick up neither
         var chanceN;
-        var chanceD = tot * num;
+        var chanceD = tot;
 
         var nums = [];
         var dens = [];
 
-        chanceN = (tot - num - double) * num;
+        // pick up neither
+        // (tot - num - double) / tot
+        chanceN = (tot - num - double);
         if (chanceN > 0) {
             var rec = calc(num,double,tot - 1);
             nums.push(chanceN * rec[0]);
@@ -68,15 +62,17 @@ function calc(num,double,tot) {
         }
 
         // pick up card with two copies
-        chanceN = (num + double) * double;
+        // double * 2 / tot
+        chanceN = 2 * double;
         if (chanceN > 0) {
             var rec = calc(num-1,double-1,tot-1);
             nums.push(chanceN * rec[0]);
             dens.push(rec[1]);
         }
 
-        // pick up card with one copy   
-        chanceN = (num + double) * (num - double);
+        // pick up card with one copy
+        // (num - double) / tot
+        chanceN = (num - double);
         if (chanceN > 0) {
             var rec = calc(num - 1,double,tot-1);
             nums.push(chanceN * rec[0]);
@@ -96,14 +92,15 @@ function calc(num,double,tot) {
         }
         den = fullD;
         nu = fullN + den;
-        console.log(num,double,tot)
         data[num][double][tot] = reduce(nu,den);
     }
     return [nu,den];
 }
 
 function reduce(num,den) {
-        console.log(num,den);
+    if (num > Number.MAX_SAFE_INTEGER || den > Number.MAX_SAFE_INTEGER) {
+        return [num,den];
+    }
     for (var i = 2 ; i <= num && i <= den ; i++) {
         if (num % i === 0 && den % i === 0) {
             num /= i;
@@ -111,7 +108,7 @@ function reduce(num,den) {
             i--;
         }
     }
-    return [num,den]
+    return [num,den];
 }
 
 function primeFactor(num) {
